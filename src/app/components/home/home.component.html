@@ -1,0 +1,16 @@
+<div class="container">
+  <mat-card class="card">
+    <mat-card-header>
+      <mat-card-title class="title">Google Meet Clone</mat-card-title>
+    </mat-card-header>
+    <mat-card-content class="content">
+      <mat-form-field class="input-field">
+        <input matInput [(ngModel)]="roomId" placeholder="Enter Room ID" />
+      </mat-form-field>
+      <div class="button-container">
+        <button mat-flat-button color="primary" (click)="createRoom()">Create Room</button>
+        <button mat-flat-button color="primary" (click)="joinRoom()">Join Room</button>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>

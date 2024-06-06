@@ -1,0 +1,14 @@
+<div>
+  <h1>Room ID: {{ roomId }}</h1>
+  <button (click)="copyRoomId()">Copy Room ID</button>
+  <button (click)="toggleAudio()">{{ audioEnabled ? 'Disable Audio' : 'Enable Audio' }}</button>
+  <button (click)="toggleVideo()">{{ videoEnabled ? 'Disable Video' : 'Enable Video' }}</button>
+  <button (click)="endCall()">End Call</button>
+
+  <div>
+    <video #localVideo autoplay muted></video>
+  </div>
+  <div *ngFor="let remoteStream of remoteStreams; let i = index">
+    <video #remoteVideo autoplay [srcObject]="remoteStream"></video>
+  </div>
+</div>

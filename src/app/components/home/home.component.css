@@ -1,0 +1,44 @@
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
+.card {
+  width: 80%;
+  max-width: 400px; /* Maximum width for larger screens */
+  border-radius: 15px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.title {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.content {
+  padding: 24px;
+}
+
+.input-field {
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.button-container {
+  display: flex;
+  justify-content: space-between;
+}
+
+button {
+  font-size: 16px;
+  padding: 10px 20px;
+}
+
+button:hover {
+  background-color: #1565c0; /* Darken primary color on hover */
+}
+.mat-mdc-button-base {
+  margin: 8px 8px 8px 0;
+}
