@@ -49,7 +49,7 @@ export class RoomComponent implements OnInit, OnDestroy {
 
       // Initialize PeerJS
       this.myPeer = new Peer({
-        host: environment.socketUrl,
+        host: environment.peerJsUrl,
         path: "/peerjs",
         secure:true
       });
