@@ -1,5 +1,3 @@
-/** @format */
-
 import {
   Component,
   ElementRef,
@@ -13,6 +11,7 @@ import { ActivatedRoute, Router } from "@angular/router";
 import { io } from "socket.io-client";
 import Peer from "peerjs";
 import { CommonModule } from "@angular/common";
+import { environment } from "../../../environments/environment";
 
 @Component({
   selector: "app-room",
@@ -42,7 +41,7 @@ export class RoomComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.socket = io("https://websocket-84o2.onrender.com", {
+    this.socket = io(environment.socketUrl, {
       transports: ["polling"],
     });
     this.socket.on("connect", () => {
@@ -50,7 +49,7 @@ export class RoomComponent implements OnInit, OnDestroy {
 
       // Initialize PeerJS
       this.myPeer = new Peer({
-        host: "peerjsserver-do0j.onrender.com",
+        host: environment.socketUrl,
         path: "/peerjs",
         secure:true
       });
