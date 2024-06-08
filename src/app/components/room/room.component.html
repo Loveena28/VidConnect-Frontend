@@ -18,7 +18,7 @@
     >
       <div class="local-wrapper">
         <video #localVideo autoplay [srcObject]="myVideoStream"></video>
-        <div class="label">Host</div>
+        <!-- <div class="label">Host</div> -->
       </div>
       <div *ngIf="remoteStreams.length > 0" class="remote-videos">
         <div
@@ -27,7 +27,7 @@
         >
           <video #remoteVideo autoplay [srcObject]="remoteStream">
           </video>
-          <div class="label">Participant {{ i + 1 }}</div>
+          <!-- <div class="label">Participant {{ i + 1 }}</div> -->
       </div>
       </div>
     </div>
