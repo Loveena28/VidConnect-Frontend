@@ -17,7 +17,7 @@
       }"
     >
       <div class="local-wrapper">
-        <video #localVideo autoplay muted></video>
+        <video #localVideo autoplay [srcObject]="myVideoStream"></video>
         <div class="label">Host</div>
       </div>
       <div *ngIf="remoteStreams.length > 0" class="remote-videos">
@@ -34,10 +34,10 @@
   </div>
   <div class="controls">
     <button (click)="toggleAudio()">
-      <mat-icon>{{ audioEnabled ? "mic" : "mic_off" }}</mat-icon>
+      <mat-icon [style.color] = "!audioEnabled ?'red' : 'white'">{{ audioEnabled ? "mic" : "mic_off" }}</mat-icon>
     </button>
     <button (click)="toggleVideo()">
-      <mat-icon>{{ videoEnabled ? "videocam" : "videocam_off" }}</mat-icon>
+      <mat-icon [style.color] = "!videoEnabled ?'red' : 'white'">{{ videoEnabled ? "videocam" : "videocam_off" }}</mat-icon>
     </button>
     <button (click)="endCall()" class="end-call">
       <mat-icon>call_end</mat-icon>

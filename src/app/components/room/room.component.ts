@@ -52,7 +52,7 @@ export class RoomComponent implements OnInit, OnDestroy {
       navigator.mediaDevices
         .getUserMedia({
           video: true,
-          audio: false,
+          audio: true
         })
         .then((stream) => {
           this.myVideoStream = stream;
