@@ -1,44 +1,121 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+}
+
 .container {
   display: flex;
-  justify-content: center;
-  align-items: center;
+  flex-direction: column;
   height: 100%;
+  padding: 0 3rem;
+  overflow: hidden;
 }
 
-.card {
-  width: 80%;
-  max-width: 400px; /* Maximum width for larger screens */
-  border-radius: 15px;
-  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 2rem 0;
 }
 
-.title {
-  font-size: 24px;
+.app-name {
+  font-size: 1.7rem;
   font-weight: bold;
 }
 
+.date-time {
+  font-size: 0.9rem;
+  color: #333;
+}
+
 .content {
-  padding: 24px;
-}
-
-.input-field {
-  width: 100%;
-  margin-bottom: 20px;
-}
-
-.button-container {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  animation: fadeSlideIn 1.5s ease-in-out forwards;
+  text-align: center;
 }
 
-button {
-  font-size: 16px;
-  padding: 10px 20px;
+.animated-text {
+  font-size: 2rem;
+  text-align: left;
+  margin-bottom: 2rem;
+  }
+  
+  @keyframes fadeSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-button:hover {
-  background-color: #1565c0; /* Darken primary color on hover */
+.card-container {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin: 2rem 0;
 }
-.mat-mdc-button-base {
-  margin: 8px 8px 8px 0;
+
+.meeting-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  border-radius: 15px;
+  padding: 2rem;
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.meeting-card:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.new-meeting {
+  background-color: #ff7043;
+}
+
+.join-meeting {
+  background-color: #42a5f5;
+}
+
+.card-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.card-icon {
+  font-size: 3rem;
+  color: white;
+  margin-bottom: 1rem;
+}
+
+.card-text h2,
+.card-text p {
+  color: white;
+  margin: 0;
+}
+
+.card-text h2 {
+  font-size: 1.5rem;
+  margin-bottom: 0.2rem;
+}
+
+.card-text p {
+  font-size: 0.8rem;
+  text-align: left;
+  color: rgb(232, 230, 230);
 }

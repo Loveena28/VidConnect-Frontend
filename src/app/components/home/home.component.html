@@ -1,16 +1,33 @@
 <div class="container">
-  <mat-card class="card">
-    <mat-card-header>
-      <mat-card-title class="title">Google Meet Clone</mat-card-title>
-    </mat-card-header>
-    <mat-card-content class="content">
-      <mat-form-field class="input-field">
-        <input matInput [(ngModel)]="roomId" placeholder="Enter Room ID" />
-      </mat-form-field>
-      <div class="button-container">
-        <button mat-flat-button color="primary" (click)="createRoom()">Create Room</button>
-        <button mat-flat-button color="primary" (click)="joinRoom()">Join Room</button>
-      </div>
-    </mat-card-content>
-  </mat-card>
+  <div class="header">
+    <div class="app-name">Vid Connect</div>
+    <div class="date-time">
+      {{ currentDate | date : "EEEE, MMMM d y" }} ,
+      {{ currentDate | date : "shortTime" }}
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="animated-text">Say goodbye to awkward silences.</div>
+    <div class="card-container">
+      <mat-card class="meeting-card new-meeting" (click)="createRoom()">
+        <div class="card-content">
+          <mat-icon>videocam</mat-icon>
+          <div class="card-text">
+            <h2>New Meeting</h2>
+            <p>Create a new meeting</p>
+          </div>
+        </div>
+      </mat-card>
+      <mat-card class="meeting-card join-meeting" (click)="joinRoom()">
+        <div class="card-content">
+          <mat-icon>add</mat-icon>
+          <div class="card-text">
+            <h2>Join Meeting</h2>
+            <p>via room code</p>
+          </div>
+        </div>
+      </mat-card>
+    </div>
+  </div>
 </div>

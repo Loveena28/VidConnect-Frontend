@@ -1,0 +1,16 @@
+<!-- @format -->
+
+<h1 mat-dialog-title>Join Room</h1>
+<div mat-dialog-content>
+    <mat-form-field>
+        <mat-label>Room code</mat-label>
+        <input matInput [formControl]="roomIdControl" required />
+        <mat-error>Room code is required</mat-error>
+    </mat-form-field>
+</div>
+<mat-dialog-actions>
+    <button mat-button (click)="onNoClick()">Cancel</button>
+    <button mat-button [disabled]="!roomIdControl.valid" (click)="joinRoom()">
+        Join
+    </button>
+</mat-dialog-actions>

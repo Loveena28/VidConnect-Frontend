@@ -1,0 +1,65 @@
+.mat-dialog-container {
+    padding: 20px;
+    border-radius: 8px;
+}
+
+.mat-dialog-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.mat-dialog-content {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.mat-form-field {
+    width: 100%;
+}
+
+mat-dialog-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 20px;
+}
+
+mat-dialog-actions button {
+    border-radius: 1.5rem;
+    padding: 10px 20px;
+    font-size: 1rem;
+    border: none;
+    cursor: pointer;
+}
+
+mat-dialog-actions button:first-child {
+    background-color: #e52828;
+    color: #fff;
+}
+
+mat-dialog-actions button:last-child {
+    background-color: #54993f;
+    color: #fff;
+}
+
+
+input[matInput] {
+    font-size: 1rem;
+}
+
+@media (max-width: 400px) {
+    .mat-dialog-container {
+        padding: 10px;
+    }
+
+    .mat-dialog-title {
+        font-size: 1.2rem;
+    }
+
+    mat-dialog-actions {
+        flex-direction: column;
+        gap: 5px;
+    }
+}

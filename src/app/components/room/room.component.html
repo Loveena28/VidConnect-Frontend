@@ -1,14 +1,46 @@
-<div>
-  <h1>Room ID: {{ roomId }}</h1>
-  <button (click)="copyRoomId()">Copy Room ID</button>
-  <button (click)="toggleAudio()">{{ audioEnabled ? 'Disable Audio' : 'Enable Audio' }}</button>
-  <button (click)="toggleVideo()">{{ videoEnabled ? 'Disable Video' : 'Enable Video' }}</button>
-  <button (click)="endCall()">End Call</button>
-
-  <div>
-    <video #localVideo autoplay muted></video>
+<div class="room-container">
+  <div class="header">
+    <div class="title">
+      <mat-icon class="icon">videocam</mat-icon>
+      <h1>Vid Connect</h1>
+    </div>
+    <button aria-label="Copy to clipboard" (click)="copyRoomId()">
+      <mat-icon color="white" class="icon">content_copy</mat-icon>
+    </button>
   </div>
-  <div *ngFor="let remoteStream of remoteStreams; let i = index">
-    <video #remoteVideo autoplay [srcObject]="remoteStream"></video>
+  <div class="video-section">
+    <div
+      [ngClass]="{
+        'video-wrapper': true,
+        center: remoteStreams.length === 0,
+        'side-by-side': remoteStreams.length > 0
+      }"
+    >
+      <div class="local-wrapper">
+        <video #localVideo autoplay muted></video>
+        <div class="label">Host</div>
+      </div>
+      <div *ngIf="remoteStreams.length > 0" class="remote-videos">
+        <div
+          *ngFor="let remoteStream of remoteStreams; let i = index"
+          class="remote-wrapper"
+        >
+          <video #remoteVideo autoplay [srcObject]="remoteStream">
+          </video>
+          <div class="label">Participant {{ i + 1 }}</div>
+      </div>
+      </div>
+    </div>
+  </div>
+  <div class="controls">
+    <button (click)="toggleAudio()">
+      <mat-icon>{{ audioEnabled ? "mic" : "mic_off" }}</mat-icon>
+    </button>
+    <button (click)="toggleVideo()">
+      <mat-icon>{{ videoEnabled ? "videocam" : "videocam_off" }}</mat-icon>
+    </button>
+    <button (click)="endCall()" class="end-call">
+      <mat-icon>call_end</mat-icon>
+    </button>
   </div>
 </div>

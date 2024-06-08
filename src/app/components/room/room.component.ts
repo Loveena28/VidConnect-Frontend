@@ -1,23 +1,17 @@
-import {
-  Component,
-  ElementRef,
-  OnDestroy,
-  OnInit,
-  ViewChild,
-  ViewChildren,
-  QueryList,
-} from "@angular/core";
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild, ViewChildren, QueryList } from "@angular/core";
 import { ActivatedRoute, Router } from "@angular/router";
 import { io } from "socket.io-client";
 import Peer from "peerjs";
 import { CommonModule } from "@angular/common";
+import { MatIconModule } from "@angular/material/icon";
 import { environment } from "../../../environments/environment";
+import { MatGridListModule } from "@angular/material/grid-list";
 
 @Component({
   selector: "app-room",
   templateUrl: "./room.component.html",
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, MatIconModule, MatGridListModule],
   styleUrls: ["./room.component.css"],
 })
 export class RoomComponent implements OnInit, OnDestroy {
@@ -30,9 +24,7 @@ export class RoomComponent implements OnInit, OnDestroy {
   remoteStreams: MediaStream[] = [];
 
   @ViewChild("localVideo") localVideo!: ElementRef<HTMLVideoElement>;
-  @ViewChildren("remoteVideo") remoteVideos!: QueryList<
-    ElementRef<HTMLVideoElement>
-  >;
+  @ViewChildren("remoteVideo") remoteVideos!: QueryList<ElementRef<HTMLVideoElement>>;
 
   private peers: { [key: string]: any } = {};
 
@@ -47,11 +39,10 @@ export class RoomComponent implements OnInit, OnDestroy {
     this.socket.on("connect", () => {
       console.log("Socket connected:", this.socket.id, this.socket.connected);
 
-      // Initialize PeerJS
       this.myPeer = new Peer({
         host: environment.peerJsUrl,
         path: "/peerjs",
-        secure:true
+        secure: true,
       });
 
       this.myPeer.on("open", (id) => {
@@ -100,7 +91,6 @@ export class RoomComponent implements OnInit, OnDestroy {
   }
 
   addRemoteStream(stream: MediaStream, userId: string): void {
-    // Check if the stream already exists
     const existingStream = this.remoteStreams.find((s) => s.id === stream.id);
     if (!existingStream) {
       this.remoteStreams.push(stream);
@@ -110,9 +100,7 @@ export class RoomComponent implements OnInit, OnDestroy {
 
   removeRemoteStream(userId: string): void {
     delete this.peers[userId];
-    this.remoteStreams = this.remoteStreams.filter(
-      (stream) => stream.id !== userId
-    );
+    this.remoteStreams = this.remoteStreams.filter((stream) => stream.id !== userId);
     this.updateRemoteVideos();
   }
 
@@ -128,14 +116,16 @@ export class RoomComponent implements OnInit, OnDestroy {
 
   toggleAudio(): void {
     this.audioEnabled = !this.audioEnabled;
-    if (this.myVideoStream)
+    if (this.myVideoStream) {
       this.myVideoStream.getAudioTracks()[0].enabled = this.audioEnabled;
+    }
   }
 
   toggleVideo(): void {
     this.videoEnabled = !this.videoEnabled;
-    if (this.myVideoStream)
+    if (this.myVideoStream) {
       this.myVideoStream.getVideoTracks()[0].enabled = this.videoEnabled;
+    }
   }
 
   endCall(): void {
@@ -156,6 +146,11 @@ export class RoomComponent implements OnInit, OnDestroy {
       this.myVideoStream = null;
     }
 
+    // Clear the local video element
+    if (this.localVideo && this.localVideo.nativeElement) {
+      this.localVideo.nativeElement.srcObject = null;
+    }
+
     // Disconnect the socket
     if (this.socket) {
       this.socket.disconnect();
@@ -164,7 +159,7 @@ export class RoomComponent implements OnInit, OnDestroy {
     // Clear the remote streams array
     this.remoteStreams = [];
 
-    // Clear the video elements
+    // Clear the remote video elements
     this.updateRemoteVideos();
 
     // Redirect to home page
