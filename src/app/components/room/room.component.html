@@ -1,3 +1,5 @@
+<!-- @format -->
+
 <div class="room-container">
   <div class="header">
     <div class="title">
@@ -9,35 +11,39 @@
     </button>
   </div>
   <div class="video-section">
-    <div
-      [ngClass]="{
-        'video-wrapper': true,
-        center: remoteStreams.length === 0,
-        'side-by-side': remoteStreams.length > 0
-      }"
-    >
-      <div class="local-wrapper">
-        <video #localVideo autoplay [srcObject]="myVideoStream"></video>
-        <!-- <div class="label">{{localName}}</div> -->
+    <ng-container *ngIf="remoteStreams$ | async as remoteStreams">
+      <div
+        [ngClass]="{
+          'video-wrapper': true,
+          'center': remoteStreams.length === 0,
+          'side-by-side': remoteStreams.length > 0
+        }"
+      >
+        <div class="local-wrapper">
+          <video #localVideo autoplay [srcObject]="myVideoStream"></video>
+          <div class="label">{{ localName }}</div>
+        </div>
+        <div class="remote-videos">
+          <div
+            *ngFor="let remoteStream of remoteStreams$ | async"
+            class="remote-wrapper"
+          >
+            <video #remoteVideo autoplay [srcObject]="remoteStream"></video>
+          </div>
+        </div>
       </div>
-      <div *ngIf="remoteStreams.length > 0" class="remote-videos">
-        <div
-          *ngFor="let remoteStream of remoteStreams; let i = index"
-          class="remote-wrapper"
-        >
-          <video #remoteVideo autoplay [srcObject]="remoteStream">
-          </video>
-          <!-- <div class="label">Participant {{ i + 1 }}</div> -->
-      </div>
-      </div>
-    </div>
+    </ng-container>
   </div>
   <div class="controls">
     <button (click)="toggleAudio()">
-      <mat-icon [style.color] = "!audioEnabled ?'red' : 'white'">{{ audioEnabled ? "mic" : "mic_off" }}</mat-icon>
+      <mat-icon [style.color]="!audioEnabled ? 'red' : 'white'">{{
+        audioEnabled ? "mic" : "mic_off"
+      }}</mat-icon>
     </button>
     <button (click)="toggleVideo()">
-      <mat-icon [style.color] = "!videoEnabled ?'red' : 'white'">{{ videoEnabled ? "videocam" : "videocam_off" }}</mat-icon>
+      <mat-icon [style.color]="!videoEnabled ? 'red' : 'white'">{{
+        videoEnabled ? "videocam" : "videocam_off"
+      }}</mat-icon>
     </button>
     <button (click)="endCall()" class="end-call">
       <mat-icon>call_end</mat-icon>

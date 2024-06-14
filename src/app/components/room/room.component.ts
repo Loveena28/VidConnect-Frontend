@@ -1,4 +1,12 @@
-import { Component, ElementRef, OnDestroy, OnInit, ViewChild, ViewChildren, QueryList } from "@angular/core";
+import {
+  Component,
+  ElementRef,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+  ViewChildren,
+  QueryList,
+} from "@angular/core";
 import { ActivatedRoute, Router } from "@angular/router";
 import { io } from "socket.io-client";
 import Peer from "peerjs";
@@ -6,7 +14,14 @@ import { CommonModule } from "@angular/common";
 import { MatIconModule } from "@angular/material/icon";
 import { environment } from "../../../environments/environment";
 import { MatGridListModule } from "@angular/material/grid-list";
+import { BehaviorSubject } from "rxjs";
 import { AuthService } from "../../services/auth.service";
+
+// interface RemoteStream {
+//   userId: string;
+//   stream: MediaStream;
+//   name: string;
+// }
 
 @Component({
   selector: "app-room",
@@ -22,28 +37,35 @@ export class RoomComponent implements OnInit, OnDestroy {
   myVideoStream: MediaStream | null = null;
   audioEnabled: boolean = true;
   videoEnabled: boolean = true;
-  remoteStreams: MediaStream[] = [];
-  localName: string = ''
+  localName: string = "";
+  remoteStreams$ = new BehaviorSubject<MediaStream[]>([]);
+  participants = new Map<string, string>();
 
   @ViewChild("localVideo") localVideo!: ElementRef<HTMLVideoElement>;
-  @ViewChildren("remoteVideo") remoteVideos!: QueryList<ElementRef<HTMLVideoElement>>;
+  @ViewChildren("remoteVideo") remoteVideos!: QueryList<
+    ElementRef<HTMLVideoElement>
+  >;
 
   private peers: { [key: string]: any } = {};
 
-  constructor(private route: ActivatedRoute, private router: Router,private authService : AuthService) {
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router,
+    private authService: AuthService
+  ) {
     this.roomId = this.route.snapshot.paramMap.get("id")!;
   }
 
   ngOnInit(): void {
-    if (this.authService.getToken()){
+    if (this.authService.getToken()) {
       this.localName = this.authService.name;
     }
     this.socket = io(environment.socketUrl, {
       transports: ["polling"],
     });
     this.socket.on("connect", () => {
+      this.participants.clear();
       console.log("Socket connected:", this.socket.id, this.socket.connected);
-
       this.myPeer = new Peer({
         host: environment.peerJsUrl,
         // host: 'localhost',
@@ -53,13 +75,15 @@ export class RoomComponent implements OnInit, OnDestroy {
       });
 
       this.myPeer.on("open", (id) => {
-        this.socket.emit("join-room", this.roomId, id);
+        this.socket.emit("join-room", this.roomId, id, this.localName);
+        this.participants.set(id, this.localName);
+        // console.log("Participants:", this.participants);
       });
 
       navigator.mediaDevices
         .getUserMedia({
           video: true,
-          audio: true
+          audio: false,
         })
         .then((stream) => {
           this.myVideoStream = stream;
@@ -72,21 +96,35 @@ export class RoomComponent implements OnInit, OnDestroy {
             });
           });
 
-          this.socket.on("user-joined", (userId: string) => {
-            this.connectToNewUser(userId, stream);
-          });
+          this.socket.on(
+            "user-joined",
+            (userId: string, participantName: string) => {
+              this.participants.set(userId, participantName); // Update participant names
+              // console.log("Participants:", this.participants);
+              this.connectToNewUser(userId, stream);
+            }
+          );
 
           this.socket.on("user-disconnected", (userId: string) => {
             if (this.peers[userId]) {
               this.peers[userId].close();
               this.removeRemoteStream(userId);
             }
+            this.participants.delete(userId);
+            // console.log("Participants:", this.participants);
           });
         });
     });
+
+    this.remoteStreams$.subscribe((remoteStreams) => {
+      this.updateRemoteVideos(remoteStreams);
+    });
   }
 
-  connectToNewUser(userId: string, stream: MediaStream): void {
+  connectToNewUser(
+    userId: string,
+    stream: MediaStream
+  ): void {
     const call = this.myPeer?.call(userId, stream);
     call?.on("stream", (userVideoStream) => {
       this.addRemoteStream(userVideoStream, userId);
@@ -98,23 +136,28 @@ export class RoomComponent implements OnInit, OnDestroy {
   }
 
   addRemoteStream(stream: MediaStream, userId: string): void {
-    const existingStream = this.remoteStreams.find((s) => s.id === stream.id);
+    const currentStreams = this.remoteStreams$.getValue();
+    const existingStream = currentStreams.find((s) => s.id === stream.id);
     if (!existingStream) {
-      this.remoteStreams.push(stream);
-      this.updateRemoteVideos();
+      this.remoteStreams$.next([...currentStreams, stream]);
     }
   }
 
   removeRemoteStream(userId: string): void {
     delete this.peers[userId];
-    this.remoteStreams = this.remoteStreams.filter((stream) => stream.id !== userId);
-    this.updateRemoteVideos();
+    const currentStreams = this.remoteStreams$.getValue();
+    const updatedStreams = currentStreams.filter((s) => s.id !== userId);
+    this.remoteStreams$.next(updatedStreams);
   }
 
-  updateRemoteVideos(): void {
+  updateRemoteVideos(remoteStreams: MediaStream[]): void {
+    if (!this.remoteVideos) {
+      return;
+    }
     this.remoteVideos.forEach((videoElement, index) => {
-      if (this.remoteStreams[index]) {
-        videoElement.nativeElement.srcObject = this.remoteStreams[index];
+      const streamObj = remoteStreams?.[index];
+      if (streamObj && streamObj instanceof MediaStream) {
+        videoElement.nativeElement.srcObject = streamObj;
       } else {
         videoElement.nativeElement.srcObject = null;
       }
@@ -130,6 +173,7 @@ export class RoomComponent implements OnInit, OnDestroy {
 
   toggleVideo(): void {
     this.videoEnabled = !this.videoEnabled;
+    console.log(this.participants)
     if (this.myVideoStream) {
       this.myVideoStream.getVideoTracks()[0].enabled = this.videoEnabled;
     }
@@ -164,10 +208,7 @@ export class RoomComponent implements OnInit, OnDestroy {
     }
 
     // Clear the remote streams array
-    this.remoteStreams = [];
-
-    // Clear the remote video elements
-    this.updateRemoteVideos();
+    this.remoteStreams$.next([]);
 
     // Redirect to home page
     this.router.navigate(["/"]);
