@@ -1,5 +1,3 @@
-/** @format */
-
 import { Injectable } from "@angular/core";
 import { Router } from "@angular/router";
 import { AuthConfig, OAuthService } from "angular-oauth2-oidc";

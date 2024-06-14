@@ -6,6 +6,7 @@ import { CommonModule } from "@angular/common";
 import { MatIconModule } from "@angular/material/icon";
 import { environment } from "../../../environments/environment";
 import { MatGridListModule } from "@angular/material/grid-list";
+import { AuthService } from "../../services/auth.service";
 
 @Component({
   selector: "app-room",
@@ -22,17 +23,21 @@ export class RoomComponent implements OnInit, OnDestroy {
   audioEnabled: boolean = true;
   videoEnabled: boolean = true;
   remoteStreams: MediaStream[] = [];
+  localName: string = ''
 
   @ViewChild("localVideo") localVideo!: ElementRef<HTMLVideoElement>;
   @ViewChildren("remoteVideo") remoteVideos!: QueryList<ElementRef<HTMLVideoElement>>;
 
   private peers: { [key: string]: any } = {};
 
-  constructor(private route: ActivatedRoute, private router: Router) {
+  constructor(private route: ActivatedRoute, private router: Router,private authService : AuthService) {
     this.roomId = this.route.snapshot.paramMap.get("id")!;
   }
 
   ngOnInit(): void {
+    if (this.authService.getToken()){
+      this.localName = this.authService.name;
+    }
     this.socket = io(environment.socketUrl, {
       transports: ["polling"],
     });
@@ -41,6 +46,8 @@ export class RoomComponent implements OnInit, OnDestroy {
 
       this.myPeer = new Peer({
         host: environment.peerJsUrl,
+        // host: 'localhost',
+        // port : 3001,
         path: "/peerjs",
         secure: true,
       });
