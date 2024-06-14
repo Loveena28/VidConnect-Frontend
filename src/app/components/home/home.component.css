@@ -4,7 +4,8 @@
   padding: 0;
 }
 
-html, body {
+html,
+body {
   height: 100%;
   overflow: hidden;
 }
@@ -34,6 +35,47 @@ html, body {
   color: #333;
 }
 
+.profile-container {
+  position: relative;
+  cursor: pointer;
+}
+
+.profile-picture {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+
+.logout-button {
+  position: absolute;
+  top: 50px;
+  right: 0;
+  background-color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.logout-button button {
+  background: none;
+  border: none;
+  color: #333;
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.logout-button mat-icon {
+  color: #ff7043;
+  font-size: 1.2rem;
+}
+
 .content {
   display: flex;
   flex-direction: column;
@@ -48,13 +90,14 @@ html, body {
   font-size: 2rem;
   text-align: left;
   margin-bottom: 2rem;
-  }
-  
-  @keyframes fadeSlideIn {
+}
+
+@keyframes fadeSlideIn {
   from {
     opacity: 0;
     transform: translateY(30px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);

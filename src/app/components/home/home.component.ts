@@ -1,13 +1,16 @@
-import { Component } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
-import { MatInputModule } from '@angular/material/input';
-import { MatCardModule } from '@angular/material/card';
-import { MatIconModule } from '@angular/material/icon';
-import { CommonModule } from '@angular/common';
-import { MatDialog } from '@angular/material/dialog';
-import { JoinRoomDialogComponent } from './join-room-dialog/join-room-dialog.component';
+/** @format */
 
+import { Component } from "@angular/core";
+import { FormsModule } from "@angular/forms";
+import { Router } from "@angular/router";
+import { MatInputModule } from "@angular/material/input";
+import { MatCardModule } from "@angular/material/card";
+import { MatIconModule } from "@angular/material/icon";
+import { CommonModule } from "@angular/common";
+import { MatDialog } from "@angular/material/dialog";
+import { JoinRoomDialogComponent } from "./join-room-dialog/join-room-dialog.component";
+import { AuthService } from "../../services/auth.service";
+import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 
 @Component({
   selector: "app-home",
@@ -19,14 +22,35 @@ import { JoinRoomDialogComponent } from './join-room-dialog/join-room-dialog.com
     MatCardModule,
     MatIconModule,
     CommonModule,
+    MatProgressSpinnerModule,
   ],
-  styleUrl: "./home.component.css",
+  styleUrls: ["./home.component.css"],
 })
 export class HomeComponent {
   roomId: string = "";
+  profilePicture: string = "";
   currentDate: number = Date.now();
+  showLogout: boolean = false;
 
-  constructor(private router: Router, public dialog: MatDialog) {}
+  constructor(
+    private router: Router,
+    public dialog: MatDialog,
+    private authService: AuthService
+  ) {}
+
+  ngOnInit() {
+    if (this.authService.getToken()) {
+      this.profilePicture = this.authService.getProfilePicture();
+    }
+  }
+
+  toggleLogout() {
+    this.showLogout = !this.showLogout;
+  }
+
+  logout() {
+    this.authService.logout();
+  }
 
   createRoom() {
     const newRoomId = Math.random().toString(36).substring(2, 15);
@@ -36,7 +60,6 @@ export class HomeComponent {
   joinRoom() {
     const dialogRef = this.dialog.open(JoinRoomDialogComponent, {
       width: "250px",
-      data: {},
     });
   }
 }

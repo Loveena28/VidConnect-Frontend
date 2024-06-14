@@ -1,9 +1,25 @@
+<!-- @format -->
+
 <div class="container">
   <div class="header">
     <div class="app-name">Vid Connect</div>
     <div class="date-time">
-      {{ currentDate | date : "EEEE, MMMM d y" }} ,
+      {{ currentDate | date : "EEEE, MMMM d y" }},
       {{ currentDate | date : "shortTime" }}
+    </div>
+    <div class="profile-container">
+      <img
+        [src]="profilePicture"
+        alt="Profile Picture"
+        class="profile-picture"
+        (click)="toggleLogout()"
+        referrerpolicy="no-referrer"
+      />
+      <div *ngIf="showLogout" class="logout-button">
+        <button (click)="logout()">
+          <mat-icon>power_settings_new</mat-icon>
+        </button>
+      </div>
     </div>
   </div>
 
