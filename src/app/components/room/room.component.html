@@ -9,17 +9,17 @@
     </button>
   </div>
   <div class="video-section">
-    <ng-container *ngIf="(remoteStreams$ | async) as remoteStreams">
+    <ng-container *ngIf="remoteStreams$ | async as remoteStreams">
       <div
         [ngClass]="{
           'video-wrapper': true,
-          center: remoteStreams.length === 0,
+          'center': remoteStreams.length === 0,
           'side-by-side': remoteStreams.length > 0
         }"
       >
         <div class="local-wrapper">
           <video #localVideo autoplay [srcObject]="myVideoStream"></video>
-          <!-- <div class="label">Host</div> -->
+          <div class="label">{{localName}}</div>
         </div>
         <div *ngIf="remoteStreams.length > 0" class="remote-videos">
           <div
@@ -36,10 +36,14 @@
   </div>
   <div class="controls">
     <button (click)="toggleAudio()">
-      <mat-icon [style.color]="!audioEnabled ? 'red' : 'white'">{{ audioEnabled ? "mic" : "mic_off" }}</mat-icon>
+      <mat-icon [style.color]="!audioEnabled ? 'red' : 'white'">{{
+        audioEnabled ? "mic" : "mic_off"
+      }}</mat-icon>
     </button>
     <button (click)="toggleVideo()">
-      <mat-icon [style.color]="!videoEnabled ? 'red' : 'white'">{{ videoEnabled ? "videocam" : "videocam_off" }}</mat-icon>
+      <mat-icon [style.color]="!videoEnabled ? 'red' : 'white'">{{
+        videoEnabled ? "videocam" : "videocam_off"
+      }}</mat-icon>
     </button>
     <button (click)="endCall()" class="end-call">
       <mat-icon>call_end</mat-icon>

@@ -16,11 +16,8 @@ import { MatIconModule } from "@angular/material/icon";
 import { environment } from "../../../environments/environment";
 import { MatGridListModule } from "@angular/material/grid-list";
 import { BehaviorSubject } from "rxjs";
+import { AuthService } from "../../services/auth.service";
 
-// interface RemoteStream {
-//   userId: string;
-//   stream: MediaStream;
-// }
 
 @Component({
   selector: "app-room",
@@ -38,6 +35,7 @@ export class RoomComponent implements OnInit, OnDestroy {
   videoEnabled: boolean = true;
   remoteStreams$ = new BehaviorSubject<MediaStream[]>([]);
   private userStreamMap: { [key: string]: string } = {};
+  localName : string = ''
 
   @ViewChild("localVideo") localVideo!: ElementRef<HTMLVideoElement>;
   @ViewChildren("remoteVideo") remoteVideos!: QueryList<
@@ -49,18 +47,21 @@ export class RoomComponent implements OnInit, OnDestroy {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private authService : AuthService
   ) {
     this.roomId = this.route.snapshot.paramMap.get("id")!;
   }
 
   ngOnInit(): void {
+    if(this.authService.getToken()){
+      this.localName = this.authService.name;
+    }
     this.socket = io(environment.socketUrl, {
       transports: ["polling"],
     });
     this.socket.on("connect", () => {
       console.log("Socket connected:", this.socket.id, this.socket.connected);
-
       this.myPeer = new Peer({
         host: environment.peerJsUrl,
         path: "/peerjs",
@@ -68,7 +69,7 @@ export class RoomComponent implements OnInit, OnDestroy {
       });
 
       this.myPeer.on("open", (id) => {
-        this.socket.emit("join-room", this.roomId, id);
+        this.socket.emit("join-room", this.roomId, id, this.localName);
       });
 
       navigator.mediaDevices
@@ -87,9 +88,12 @@ export class RoomComponent implements OnInit, OnDestroy {
             });
           });
 
-          this.socket.on("user-joined", (userId: string) => {
-            this.connectToNewUser(userId, stream);
-          });
+          this.socket.on(
+            "user-joined",
+            (userId: string, participantName: string) => {
+              this.connectToNewUser(userId, stream);
+            }
+          );
 
           this.socket.on("user-disconnected", (userId: string) => {
             if (this.peers[userId]) {
@@ -105,7 +109,10 @@ export class RoomComponent implements OnInit, OnDestroy {
     });
   }
 
-  connectToNewUser(userId: string, stream: MediaStream): void {
+  connectToNewUser(
+    userId: string,
+    stream: MediaStream
+  ): void {
     const call = this.myPeer?.call(userId, stream);
     call?.on("stream", (userVideoStream) => {
       this.addRemoteStream(userVideoStream, userId);
