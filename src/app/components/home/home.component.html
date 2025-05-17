@@ -7,6 +7,10 @@
       {{ currentDate | date : "EEEE, MMMM d y" }},
       {{ currentDate | date : "shortTime" }}
     </div>
+    <mat-icon class="dark-mode-toggle" (click)="toggleDarkMode()"
+      [matTooltip]="isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'">
+      {{ isDarkMode ? 'light_mode' : 'dark_mode' }}
+      </mat-icon>
     <div class="profile-container">
       <img
         [src]="profilePicture"
@@ -16,7 +20,7 @@
         referrerpolicy="no-referrer"
       />
       <div *ngIf="showLogout" class="logout-button">
-        <button (click)="logout()">
+        <button aria-label="Logout" (click)="logout()">
           <mat-icon>power_settings_new</mat-icon>
         </button>
       </div>
@@ -24,6 +28,7 @@
   </div>
 
   <div class="content">
+    <!-- <div class="greeting">Welcome back, {{ this.userName }}!</div> -->
     <div class="animated-text">Say goodbye to awkward silences.</div>
     <div class="card-container">
       <mat-card class="meeting-card new-meeting" (click)="createRoom()">

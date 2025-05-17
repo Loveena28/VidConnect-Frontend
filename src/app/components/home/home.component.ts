@@ -9,7 +9,7 @@ import { MatDialog } from "@angular/material/dialog";
 import { JoinRoomDialogComponent } from "./join-room-dialog/join-room-dialog.component";
 import { AuthService } from "../../services/auth.service";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
-
+import { MatTooltipModule } from "@angular/material/tooltip";
 @Component({
   selector: "app-home",
   templateUrl: "./home.component.html",
@@ -21,6 +21,7 @@ import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
     MatIconModule,
     CommonModule,
     MatProgressSpinnerModule,
+    MatTooltipModule,
   ],
   styleUrls: ["./home.component.css"],
 })
@@ -29,6 +30,8 @@ export class HomeComponent {
   profilePicture: string = "";
   currentDate: number = Date.now();
   showLogout: boolean = false;
+  userName: string = "";
+  isDarkMode: boolean = false;
 
   constructor(
     private router: Router,
@@ -39,6 +42,7 @@ export class HomeComponent {
   ngOnInit() {
     if (this.authService.getToken()) {
       this.profilePicture = this.authService.getProfilePicture();
+      this.userName = this.authService.name;
     }
   }
 
@@ -59,5 +63,9 @@ export class HomeComponent {
     const dialogRef = this.dialog.open(JoinRoomDialogComponent, {
       width: "250px",
     });
+  }
+  toggleDarkMode() {
+    this.isDarkMode = !this.isDarkMode;
+    document.body.classList.toggle("dark-mode", this.isDarkMode);
   }
 }
