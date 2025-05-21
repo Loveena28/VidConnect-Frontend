@@ -56,6 +56,7 @@ export class HomeComponent {
 
   createRoom() {
     const newRoomId = Math.random().toString(36).substring(2, 15);
+    localStorage.setItem("isHost", "true");
     this.router.navigate(["/room", newRoomId]);
   }
 
@@ -63,6 +64,7 @@ export class HomeComponent {
     const dialogRef = this.dialog.open(JoinRoomDialogComponent, {
       width: "250px",
     });
+    localStorage.setItem("isHost", "false");
   }
   toggleDarkMode() {
     this.isDarkMode = !this.isDarkMode;

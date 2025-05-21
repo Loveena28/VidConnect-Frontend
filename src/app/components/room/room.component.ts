@@ -17,8 +17,8 @@ import { environment } from "../../../environments/environment";
 import { MatGridListModule } from "@angular/material/grid-list";
 import { BehaviorSubject } from "rxjs";
 import { AuthService } from "../../services/auth.service";
-
-
+import { UserEventsService } from "../../services/user-events.service";
+import { MatSnackBar } from "@angular/material/snack-bar";
 @Component({
   selector: "app-room",
   templateUrl: "./room.component.html",
@@ -27,15 +27,20 @@ import { AuthService } from "../../services/auth.service";
   styleUrls: ["./room.component.css"],
 })
 export class RoomComponent implements OnInit, OnDestroy {
+  [x: string]: any;
   roomId: string;
   myPeer: Peer | null = null;
   socket: any;
   myVideoStream: MediaStream | null = null;
   audioEnabled: boolean = true;
   videoEnabled: boolean = true;
-  remoteStreams$ = new BehaviorSubject<MediaStream[]>([]);
+  remoteStreams$ = new BehaviorSubject<
+    { userId: string; stream: MediaStream }[]
+  >([]);
+
   private userStreamMap: { [key: string]: string } = {};
-  localName : string = ''
+  localName: string = "";
+  isHost: boolean = false;
 
   @ViewChild("localVideo") localVideo!: ElementRef<HTMLVideoElement>;
   @ViewChildren("remoteVideo") remoteVideos!: QueryList<
@@ -48,18 +53,32 @@ export class RoomComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private cdr: ChangeDetectorRef,
-    private authService : AuthService
+    private authService: AuthService,
+    private _snackBar: MatSnackBar,
+    private userEventsService: UserEventsService
   ) {
     this.roomId = this.route.snapshot.paramMap.get("id")!;
   }
 
   ngOnInit(): void {
-    if(this.authService.getToken()){
+    this.isHost = localStorage.getItem("isHost") === "true";
+    if (this.authService.getToken()) {
       this.localName = this.authService.name;
     }
-    this.socket = io(environment.socketUrl, {
+    this.userEventsService.joinLeaveMessages$.subscribe((message) => {
+      this._snackBar.open(message, "Close", {
+        duration: 3000,
+        panelClass: ["info-snackbar"],
+      });
+    });
+    // setup for localhost
+    this.socket = io("http://localhost:3000", {
       transports: ["polling"],
     });
+    // setup for production
+    // this.socket = io(environment.socketUrl, {
+    //   transports: ["polling"],
+    // });
     this.socket.on("connect", () => {
       console.log("Socket connected:", this.socket.id, this.socket.connected);
       this.myPeer = new Peer({
@@ -70,6 +89,7 @@ export class RoomComponent implements OnInit, OnDestroy {
 
       this.myPeer.on("open", (id) => {
         this.socket.emit("join-room", this.roomId, id, this.localName);
+        this.userStreamMap[id] = this.localName;
       });
 
       navigator.mediaDevices
@@ -84,14 +104,17 @@ export class RoomComponent implements OnInit, OnDestroy {
           this.myPeer?.on("call", (call) => {
             call.answer(stream);
             call.on("stream", (userVideoStream) => {
-              this.addRemoteStream(userVideoStream, call.peer);
+              this.addRemoteStream(userVideoStream, call.peer, "");
             });
           });
 
           this.socket.on(
             "user-joined",
             (userId: string, participantName: string) => {
-              this.connectToNewUser(userId, stream);
+              this.connectToNewUser(userId, stream, participantName);
+              this.userEventsService.notify(
+                `${participantName} joined the room.`
+              );
             }
           );
 
@@ -99,23 +122,32 @@ export class RoomComponent implements OnInit, OnDestroy {
             if (this.peers[userId]) {
               this.peers[userId].close();
               this.removeRemoteStream(userId);
+              this.userEventsService.notify(
+                `${this.userStreamMap[userId]} left the room.`
+              );
             }
           });
+          this.socket.on("mute-all", () => {
+            this.audioEnabled = false;
+            this.toggleAudio(); // disables audio
+            alert("Host muted everyone.");
+          });
+          this.socket.on("end-meeting", () => {
+            alert("Host ended the meeting.");
+            this.endCall(); // clean up resources
+          });
         });
-    });
-
-    this.remoteStreams$.subscribe((remoteStreams) => {
-      this.updateRemoteVideos(remoteStreams);
     });
   }
 
   connectToNewUser(
     userId: string,
-    stream: MediaStream
+    stream: MediaStream,
+    participantName: string
   ): void {
     const call = this.myPeer?.call(userId, stream);
     call?.on("stream", (userVideoStream) => {
-      this.addRemoteStream(userVideoStream, userId);
+      this.addRemoteStream(userVideoStream, userId, participantName);
     });
     call?.on("close", () => {
       this.removeRemoteStream(userId);
@@ -123,44 +155,47 @@ export class RoomComponent implements OnInit, OnDestroy {
     this.peers[userId] = call;
   }
 
-  addRemoteStream(stream: MediaStream, userId: string): void {
+  addRemoteStream(stream: MediaStream, userId: string, name: string): void {
     const currentStreams = this.remoteStreams$.getValue();
-    const existingStream = currentStreams.find((s) => s.id === stream.id);
-    if (!existingStream) {
-      this.userStreamMap[userId] = stream.id;
-      this.remoteStreams$.next([...currentStreams, stream]);
+    const existing = currentStreams.find((s) => s.userId === userId);
+    if (!existing) {
+      this.userStreamMap[userId] = name;
+      this.remoteStreams$.next([...currentStreams, { userId, stream }]);
     }
   }
 
   removeRemoteStream(userId: string): void {
-    const streamId = this.userStreamMap[userId];
+    const currentStreams = this.remoteStreams$.getValue();
+    const target = currentStreams.find((s) => s.userId === userId);
+    if (target) {
+      target.stream.getTracks().forEach((track) => track.stop()); // cleanup
+    }
+    this.remoteStreams$.next(currentStreams.filter((s) => s.userId !== userId));
     delete this.peers[userId];
     delete this.userStreamMap[userId];
-    const currentStreams = this.remoteStreams$.getValue();
-    const updatedStreams = currentStreams.filter((s) => s.id !== streamId);
-    this.remoteStreams$.next(updatedStreams);
   }
 
-  updateRemoteVideos(remoteStreams: MediaStream[]): void {
-    if (!this.remoteVideos) {
-      return;
-    }
-    this.remoteVideos.forEach((videoElement, index) => {
-      const streamObj = remoteStreams[index];
-      if (streamObj && streamObj instanceof MediaStream) {
-        videoElement.nativeElement.srcObject = streamObj;
-      } else {
-        videoElement.nativeElement.srcObject = null;
-      }
-    });
-    this.cdr.detectChanges(); // Force change detection
-  }
+  // updateRemoteVideos(
+  //   remoteStreamObjs: { userId: string; stream: MediaStream }[]
+  // ): void {
+  //   if (!this.remoteVideos) return;
+
+  //   this.remoteVideos.forEach((videoElement, index) => {
+  //     const streamObj = remoteStreamObjs[index];
+  //     videoElement.nativeElement.srcObject = streamObj?.stream || null;
+  //   });
+
+  //   this.cdr.detectChanges();
+  // }
 
   toggleAudio(): void {
+    if (!this.myVideoStream) return;
+
+    const audioTracks = this.myVideoStream.getAudioTracks();
+    if (audioTracks.length === 0) return;
+
     this.audioEnabled = !this.audioEnabled;
-    if (this.myVideoStream) {
-      this.myVideoStream.getAudioTracks()[0].enabled = this.audioEnabled;
-    }
+    audioTracks.forEach((track) => (track.enabled = this.audioEnabled));
   }
 
   toggleVideo(): void {
@@ -212,5 +247,17 @@ export class RoomComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.endCall();
+  }
+
+  muteAll(): void {
+    if (confirm("Are you sure you want to mute all participants?")) {
+      this.socket.emit("mute-all");
+    }
+  }
+
+  endMeetingForAll() {
+    if (confirm("Are you sure you want to end the meeting for everyone?")) {
+      this.socket.emit("end-meeting");
+    }
   }
 }

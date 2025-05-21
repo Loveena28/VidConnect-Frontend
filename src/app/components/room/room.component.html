@@ -8,45 +8,55 @@
       <mat-icon color="white" class="icon">content_copy</mat-icon>
     </button>
   </div>
-  <div class="video-section">
-    <ng-container *ngIf="remoteStreams$ | async as remoteStreams">
-      <div
-        [ngClass]="{
-          'video-wrapper': true,
-          'center': remoteStreams.length === 0,
-          'side-by-side': remoteStreams.length > 0
-        }"
-      >
-        <div class="local-wrapper">
-          <video #localVideo autoplay [srcObject]="myVideoStream"></video>
-          <div class="label">{{localName}}</div>
-        </div>
-        <div *ngIf="remoteStreams.length > 0" class="remote-videos">
-          <div
-            *ngFor="let remoteStreamObj of remoteStreams; let i = index"
-            class="remote-wrapper"
-          >
-            <video #remoteVideo autoplay [srcObject]="remoteStreamObj">
-            </video>
-            <!-- <div class="label">Participant {{ i + 1 }}</div> -->
+  <div *ngIf="isHost" class="host-badge">
+    <mat-icon>verified_user</mat-icon>
+    You’re the host
+  </div>
+  <div class="main-layout">
+    <div *ngIf="isHost" class="host-controls-vertical">
+      <button (click)="muteAll()">
+        <mat-icon>volume_off</mat-icon>
+        <span>Mute All</span>
+      </button>
+      <button (click)="endMeetingForAll()" class="danger">
+        <mat-icon>highlight_off</mat-icon>
+        <span>End Meeting</span>
+      </button>
+    </div>
+    <div class="video-section">
+      <ng-container *ngIf="remoteStreams$ | async as remoteStreams">
+        <div [ngClass]="{
+                    'video-wrapper': true,
+                    'center': remoteStreams.length === 0,
+                    'side-by-side': remoteStreams.length > 0
+                  }">
+          <div class="local-wrapper">
+            <video #localVideo autoplay [srcObject]="myVideoStream"></video>
+            <div class="label">{{localName}}</div>
+          </div>
+      
+          <div *ngFor="let remote of remoteStreams" class="remote-wrapper">
+            <video #remoteVideo autoplay muted [srcObject]="remote.stream" [attr.data-user-id]="remote.userId"></video>
           </div>
         </div>
-      </div>
-    </ng-container>
+      </ng-container>
+      
   </div>
+  
   <div class="controls">
     <button (click)="toggleAudio()">
       <mat-icon [style.color]="!audioEnabled ? 'red' : 'white'">{{
         audioEnabled ? "mic" : "mic_off"
-      }}</mat-icon>
+        }}</mat-icon>
     </button>
     <button (click)="toggleVideo()">
       <mat-icon [style.color]="!videoEnabled ? 'red' : 'white'">{{
         videoEnabled ? "videocam" : "videocam_off"
-      }}</mat-icon>
+        }}</mat-icon>
     </button>
     <button (click)="endCall()" class="end-call">
       <mat-icon>call_end</mat-icon>
     </button>
+  </div>
   </div>
 </div>
