@@ -44,6 +44,10 @@ export class HomeComponent {
       this.profilePicture = this.authService.getProfilePicture();
       this.userName = this.authService.name;
     }
+    else{
+      this.router.navigate(["/login"]);
+      return;
+    }
   }
 
   toggleLogout() {

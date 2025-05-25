@@ -26,7 +26,7 @@ export class AuthService {
     this.oAuthService.loadDiscoveryDocumentAndTryLogin();
   this.oAuthService.tryLogin({
     onTokenReceived: (context) => {
-      console.log("Claims after login:", context.idClaims);
+      // console.log("Claims after login:", context.idClaims);
     },
   });
   }
